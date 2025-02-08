@@ -1,0 +1,46 @@
+/*
+Goal: Create a Java program to sort a list of numbers in ascending or descending order based on user input.
+*/
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
+
+public class NumberSorter {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the number of numbers: ");
+        int n = scanner.nextInt();
+
+        Integer[] numbers = new Integer[n];
+
+        System.out.println("Enter the numbers:");
+        for (int i = 0; i < n; i++) {
+            numbers[i] = scanner.nextInt();
+        }
+
+        System.out.print("Enter sorting order (asc for ascending, desc for descending): ");
+        String order = scanner.next();
+
+        List<Integer> numberList = Arrays.asList(numbers);
+
+        if (order.equalsIgnoreCase("asc")) {
+            Collections.sort(numberList);
+        } else if (order.equalsIgnoreCase("desc")) {
+            Collections.sort(numberList, Collections.reverseOrder());
+        } else {
+            System.out.println("Invalid order. Please enter 'asc' or 'desc'.");
+            return;
+        }
+
+        System.out.println("Sorted numbers:");
+        for (int num : numberList) {
+            System.out.print(num + " ");
+        }
+
+        scanner.close();
+    }
+}

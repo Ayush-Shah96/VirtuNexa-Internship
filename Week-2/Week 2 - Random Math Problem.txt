@@ -1,0 +1,101 @@
+/*
+Goal: Develop a Java application that generates random math problems for users to solve, tracks their answers, and displays the score.
+
+*/
+
+
+public class Problem {
+    private static final int DEFAULT_MIN_VALUE = 2;
+    private static final int DEFAULT_MAX_VALUE = 20;
+
+    private int number1;
+    private int number2;
+    private Operation operation;
+
+    private Problem(){
+    }
+
+    public static Problem generateRandomProblem(){
+        return generateRandomProblem(DEFAULT_MIN_VALUE, DEFAULT_MAX_VALUE);
+    }
+
+    public static Problem generateRandomProblem(int minValue, int maxValue){
+        Problem prob = new Problem();
+        Random randomGen = new Random();
+
+        int number1 = randomGen.nextInt(maxValue + minValue) + minValue;
+        int number2 = randomGen.nextInt(maxValue + minValue) + minValue;
+
+        prob.setNumber1(number1);
+        prob.setNumber2(number2);
+
+        int operationCode = randomGen.nextInt(4);
+        Operation operation = Operation.getOperationByCode(operationCode);
+        prob.setOperation(operation);
+
+        return prob;
+    }
+
+    public int getNumber1() {
+        return number1;
+    }
+
+    public int getNumber2() {
+        return number2;
+    }
+
+    public Operation getOperation() {
+        return operation;
+    }
+
+    public void setNumber1(int number1) {
+        this.number1 = number1;
+    }
+
+    public void setNumber2(int number2) {
+        this.number2 = number2;
+    }
+
+    public void setOperation(Operation operation) {
+        this.operation = operation;
+    }
+}
+
+public enum Operation {
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    DIVIDE;
+
+    public double operationResult(int n1, int n2) {
+        switch (this) {
+            case PLUS: {
+                return (n1 + n2);
+            }
+            case MINUS: {
+                return n1 - n2;
+            }
+            case MULTIPLY: {
+                return n1 * n2;
+            }
+            case DIVIDE: {
+                return n1 / n2;
+            }
+        }
+        throw new IllegalArgumentException("Behavior for operation is not specified.");
+    }
+
+    public static Operation getOperationByCode(int code) {
+        switch (code) {
+            case 1:
+                return PLUS;
+            case 2:
+                return MINUS;
+            case 3:
+                return MULTIPLY;
+            case 4:
+                return DIVIDE;
+        }
+        throw new IllegalArgumentException("Operation with this code not found.");
+    }
+}

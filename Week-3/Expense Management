@@ -1,0 +1,126 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+public class ExpenseSplitter extends JFrame {
+
+    private DefaultListModel<String> userList = new DefaultListModel<>();
+    private JList<String> userJList = new JList<>(userList);
+    private JTextField expenseField = new JTextField(10);
+    private JButton addExpenseButton = new JButton("Add Expense");
+    private JTextArea outputArea = new JTextArea(10, 20);
+
+    public ExpenseSplitter() {
+        super("Expense Splitter");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // User List
+        JPanel userListPanel = new JPanel(new BorderLayout());
+        userListPanel.add(new JScrollPane(userJList), BorderLayout.CENTER);
+        JPanel userListButtonsPanel = new JPanel();
+        JButton addUserButton = new JButton("Add User");
+        JButton removeUserButton = new JButton("Remove User");
+        userListButtonsPanel.add(addUserButton);
+        userListButtonsPanel.add(removeUserButton);
+        userListPanel.add(userListButtonsPanel, BorderLayout.SOUTH);
+        add(userListPanel, BorderLayout.WEST);
+
+        // Expense Input
+        JPanel expensePanel = new JPanel();
+        expensePanel.add(new JLabel("Expense:"));
+        expensePanel.add(expenseField);
+        expensePanel.add(addExpenseButton);
+        add(expensePanel, BorderLayout.NORTH);
+
+        // Output
+        outputArea.setEditable(false);
+        JScrollPane outputScrollPane = new JScrollPane(outputArea);
+        add(outputScrollPane, BorderLayout.CENTER);
+
+        // Event Handlers
+        addUserButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newUser = JOptionPane.showInputDialog("Enter User Name:");
+                if (newUser != null && !newUser.isEmpty()) {
+                    userList.addElement(newUser);
+                }
+            }
+        });
+
+        removeUserButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = userJList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    userList.remove(selectedIndex);
+                }
+            }
+        });
+
+        addExpenseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    double expense = Double.parseDouble(expenseField.getText());
+                    if (expense > 0) {
+                        calculateAndDisplayPayments(expense);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Invalid expense amount.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Invalid expense amount.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        pack();
+        setVisible(true);
+    }
+
+    private void calculateAndDisplayPayments(double totalExpense) {
+        int numUsers = userList.size();
+        if (numUsers == 0) {
+            outputArea.setText("No users added.\n");
+            return;
+        }
+
+        double perUserExpense = totalExpense / numUsers;
+        Map<String, Double> payments = new HashMap<>();
+        for (String user : userList) {
+            payments.put(user, 0.0);
+        }
+
+        // Calculate individual payments
+        for (int i = 0; i < numUsers - 1; i++) {
+            for (int j = i + 1; j < numUsers; j++) {
+                String user1 = userList.get(i);
+                String user2 = userList.get(j);
+                double payment = payments.get(user1) - payments.get(user2);
+                if (payment > 0) {
+                    payments.put(user1, payments.get(user1) - perUserExpense);
+                    payments.put(user2, payments.get(user2) + perUserExpense);
+                }
+            }
+        }
+
+        // Display payments
+        StringBuilder output = new StringBuilder();
+        for (Map.Entry<String, Double> entry : payments.entrySet()) {
+            String user = entry.getKey();
+            double amount = entry.getValue();
+            if (amount > 0) {
+                output.append(user).append(" owes ").append(String.format("%.2f", amount)).append(" to others.\n");
+            } else if (amount < 0) {
+                output.append("Others owe ").append(user).append(" ").append(String.format("%.2f", -amount)).append(".\n");
+            }
+        }
+        outputArea.setText(output.toString());
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ExpenseSplitter());
+    }
+}

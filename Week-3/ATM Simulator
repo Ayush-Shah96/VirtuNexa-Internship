@@ -1,0 +1,132 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.Scanner;
+
+public class ATMSimulatorGUI extends JFrame {
+
+    private JTextField amountField;
+    private JTextArea outputArea;
+    private double balance = 0.0;
+
+    public ATMSimulatorGUI() {
+        setTitle("ATM Simulator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 300);
+        setLayout(new BorderLayout());
+
+        // Load initial balance from file
+        loadBalance();
+
+        // Create components
+        JPanel inputPanel = new JPanel(new FlowLayout());
+        inputPanel.add(new JLabel("Amount:"));
+        amountField = new JTextField(10);
+        inputPanel.add(amountField);
+
+        JButton depositButton = new JButton("Deposit");
+        depositButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deposit();
+            }
+        });
+
+        JButton withdrawButton = new JButton("Withdraw");
+        withdrawButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                withdraw();
+            }
+        });
+
+        JButton checkBalanceButton = new JButton("Check Balance");
+        checkBalanceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkBalance();
+            }
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(depositButton);
+        buttonPanel.add(withdrawButton);
+        buttonPanel.add(checkBalanceButton);
+
+        outputArea = new JTextArea(10, 20);
+        outputArea.setEditable(false);
+
+        // Add components to the frame
+        add(inputPanel, BorderLayout.NORTH);
+        add(buttonPanel, BorderLayout.CENTER);
+        add(new JScrollPane(outputArea), BorderLayout.SOUTH);
+
+        setVisible(true);
+    }
+
+    private void deposit() {
+        try {
+            double amount = Double.parseDouble(amountField.getText());
+            if (amount > 0) {
+                balance += amount;
+                outputArea.append("Deposited: $" + amount + "\n");
+                saveBalance();
+            } else {
+                outputArea.append("Invalid amount. Please enter a positive value.\n");
+            }
+        } catch (NumberFormatException ex) {
+            outputArea.append("Invalid input. Please enter a valid amount.\n");
+        }
+        amountField.setText("");
+    }
+
+    private void withdraw() {
+        try {
+            double amount = Double.parseDouble(amountField.getText());
+            if (amount > 0 && amount <= balance) {
+                balance -= amount;
+                outputArea.append("Withdrawn: $" + amount + "\n");
+                saveBalance();
+            } else if (amount > balance) {
+                outputArea.append("Insufficient funds.\n");
+            } else {
+                outputArea.append("Invalid amount. Please enter a positive value.\n");
+            }
+        } catch (NumberFormatException ex) {
+            outputArea.append("Invalid input. Please enter a valid amount.\n");
+        }
+        amountField.setText("");
+    }
+
+    private void checkBalance() {
+        outputArea.append("Current Balance: $" + balance + "\n");
+    }
+
+    private void loadBalance() {
+        try (Scanner scanner = new Scanner(new File("balance.txt"))) {
+            if (scanner.hasNextDouble()) {
+                balance = scanner.nextDouble();
+            }
+        } catch (FileNotFoundException ex) {
+            // File not found, assume initial balance is 0
+        }
+    }
+
+    private void saveBalance() {
+        try (PrintWriter writer = new PrintWriter("balance.txt")) {
+            writer.println(balance);
+        } catch (FileNotFoundException ex) {
+            // Handle file creation error
+        }
+    }
+
+    public static void main(String args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new ATMSimulatorGUI();
+            }
+        });
+    }
+}

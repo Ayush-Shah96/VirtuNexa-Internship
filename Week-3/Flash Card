@@ -1,0 +1,150 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FlashcardApp extends JFrame {
+
+    private JTextField termField;
+    private JTextField definitionField;
+    private JTextArea reviewArea;
+    private JButton createButton;
+    private JButton saveButton;
+    private JButton reviewButton;
+    private JButton nextButton;
+    private JButton prevButton;
+    private List<Flashcard> flashcards;
+
+    public FlashcardApp() {
+        setTitle("Flashcard Creator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(500, 400);
+        setLayout(new BorderLayout());
+
+        JPanel inputPanel = new JPanel(new GridLayout(2, 2));
+        inputPanel.add(new JLabel("Term:"));
+        termField = new JTextField(20);
+        inputPanel.add(termField);
+        inputPanel.add(new JLabel("Definition:"));
+        definitionField = new JTextField(20);
+        inputPanel.add(definitionField);
+
+        JPanel buttonPanel = new JPanel();
+        createButton = new JButton("Create");
+        createButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createFlashcard();
+            }
+        });
+        buttonPanel.add(createButton);
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveFlashcards();
+            }
+        });
+        buttonPanel.add(saveButton);
+
+        reviewArea = new JTextArea(10, 20);
+        reviewArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(reviewArea);
+
+        JPanel reviewPanel = new JPanel();
+        reviewButton = new JButton("Review");
+        reviewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startReview();
+            }
+        });
+        reviewPanel.add(reviewButton);
+        prevButton = new JButton("Previous");
+        prevButton.setEnabled(false);
+        prevButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showPreviousFlashcard();
+            }
+        });
+        reviewPanel.add(prevButton);
+        nextButton = new JButton("Next");
+        nextButton.setEnabled(false);
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showNextFlashcard();
+            }
+        });
+        reviewPanel.add(nextButton);
+
+        add(inputPanel, BorderLayout.NORTH);
+        add(buttonPanel, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.SOUTH);
+        add(reviewPanel, BorderLayout.EAST);
+
+        flashcards = new ArrayList<>();
+
+        setVisible(true);
+    }
+
+    private void createFlashcard() {
+        String term = termField.getText();
+        String definition = definitionField.getText();
+        if (!term.isEmpty() && !definition.isEmpty()) {
+            flashcards.add(new Flashcard(term, definition));
+            termField.setText("");
+            definitionField.setText("");
+        }
+    }
+
+    private void saveFlashcards() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("flashcards.ser"))) {
+            oos.writeObject(flashcards);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving flashcards.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadFlashcards() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("flashcards.ser"))) {
+            flashcards = (List<Flashcard>) ois.readObject();
+        } catch (IOException | ClassNotFoundException ex) {
+            flashcards = new ArrayList<>();
+        }
+    }
+
+    private int currentFlashcardIndex = 0;
+
+    private void startReview() {
+        loadFlashcards();
+        if (flashcards.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No flashcards found.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        reviewArea.setText("Term: " + flashcards.get(currentFlashcardIndex).getTerm());
+        prevButton.setEnabled(true);
+        nextButton.setEnabled(true);
+        if (currentFlashcardIndex == 0) {
+            prevButton.setEnabled(false);
+        }
+        if (currentFlashcardIndex == flashcards.size() - 1) {
+            nextButton.setEnabled(false);
+        }
+    }
+
+    private void showPreviousFlashcard() {
+        if (currentFlashcardIndex > 0) {
+            currentFlashcardIndex--;
+            reviewArea.setText("Term: " + flashcards.get(currentFlashcardIndex).getTerm());
+        }
+        if (currentFlashcardIndex == 0) {
+            prevButton.setEnabled(false);
+        }
+        nextButton.setEnabled(true);
+    }
+
+    private void showNext

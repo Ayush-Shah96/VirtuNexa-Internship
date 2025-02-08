@@ -1,0 +1,49 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Random;
+
+public class DiceRollerGUI extends JFrame {
+
+    private JLabel die1Label, die2Label;
+    private JButton rollButton;
+    private Random random = new Random();
+
+    public DiceRollerGUI() {
+        setTitle("Dice Roller");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new FlowLayout());
+
+        die1Label = new JLabel();
+        die1Label.setFont(new Font("Arial", Font.BOLD, 48));
+        add(die1Label);
+
+        die2Label = new JLabel();
+        die2Label.setFont(new Font("Arial", Font.BOLD, 48));
+        add(die2Label);
+
+        rollButton = new JButton("Roll Dice");
+        rollButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rollDice();
+            }
+        });
+        add(rollButton);
+
+        pack();
+        setVisible(true);
+    }
+
+    private void rollDice() {
+        int die1 = random.nextInt(6) + 1;
+        int die2 = random.nextInt(6) + 1;
+
+        die1Label.setText(Integer.toString(die1));
+        die2Label.setText(Integer.toString(die2));
+    }
+
+    public static void main(String args) {
+        SwingUtilities.invokeLater(() -> new DiceRollerGUI());
+    }
+}

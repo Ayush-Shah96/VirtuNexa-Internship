@@ -1,0 +1,83 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class CalorieTrackerGUI extends JFrame {
+
+    private JTextField calorieIntakeField;
+    private JComboBox<String> exerciseComboBox;
+    private JTextField exerciseDurationField;
+    private JTextArea summaryTextArea;
+    private List<String> logEntries;
+
+    public CalorieTrackerGUI() {
+        setTitle("Calorie Tracker");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 300);
+        setLayout(new BorderLayout());
+
+        // Create components
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2));
+        inputPanel.add(new JLabel("Calorie Intake:"));
+        calorieIntakeField = new JTextField(10);
+        inputPanel.add(calorieIntakeField);
+        inputPanel.add(new JLabel("Exercise Activity:"));
+        String exerciseOptions = {"Running", "Swimming", "Cycling", "Walking", "Other"};
+        exerciseComboBox = new JComboBox<>(exerciseOptions);
+        inputPanel.add(exerciseComboBox);
+        inputPanel.add(new JLabel("Duration (minutes):"));
+        exerciseDurationField = new JTextField(10);
+        inputPanel.add(exerciseDurationField);
+
+        JButton logButton = new JButton("Log");
+        logButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logEntry();
+            }
+        });
+
+        JButton summaryButton = new JButton("Summary");
+        summaryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displaySummary();
+            }
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(logButton);
+        buttonPanel.add(summaryButton);
+
+        summaryTextArea = new JTextArea(10, 20);
+        summaryTextArea.setEditable(false);
+
+        // Add components to the frame
+        add(inputPanel, BorderLayout.NORTH);
+        add(buttonPanel, BorderLayout.CENTER);
+        add(new JScrollPane(summaryTextArea), BorderLayout.SOUTH);
+
+        logEntries = new ArrayList<>();
+
+        setVisible(true);
+    }
+
+    private void logEntry() {
+        try {
+            int calories = Integer.parseInt(calorieIntakeField.getText());
+            String exercise = (String) exerciseComboBox.getSelectedItem();
+            int duration = Integer.parseInt(exerciseDurationField.getText());
+
+            String entry = "Calorie Intake: " + calories + 
+                            ", Exercise: " + exercise + 
+                            ", Duration: " + duration + " minutes";
+            logEntries.add(entry);
+
+            calorieIntakeField.setText("");
+            exerciseDurationField.setText("");
+
+            JOptionPane.showMessageDialog(this, "Entry logged successfully!");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,

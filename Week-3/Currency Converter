@@ -1,0 +1,98 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONObject;
+
+public class CurrencyConverterGUI extends JFrame {
+
+    private JComboBox<String> fromCurrencyComboBox;
+    private JComboBox<String> toCurrencyComboBox;
+    private JTextField amountField;
+    private JLabel resultLabel;
+
+    public CurrencyConverterGUI() {
+        setTitle("Currency Converter");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 200);
+        setLayout(new BorderLayout());
+
+        JPanel panel = new JPanel(new GridLayout(4, 2));
+
+        panel.add(new JLabel("From Currency:"));
+        fromCurrencyComboBox = new JComboBox<>();
+        panel.add(fromCurrencyComboBox);
+
+        panel.add(new JLabel("To Currency:"));
+        toCurrencyComboBox = new JComboBox<>();
+        panel.add(toCurrencyComboBox);
+
+        panel.add(new JLabel("Amount:"));
+        amountField = new JTextField();
+        panel.add(amountField);
+
+        panel.add(new JLabel("Result:"));
+        resultLabel = new JLabel();
+        panel.add(resultLabel);
+
+        JButton convertButton = new JButton("Convert");
+        convertButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                convertCurrency();
+            }
+        });
+
+        add(panel, BorderLayout.CENTER);
+        add(convertButton, BorderLayout.SOUTH);
+
+        // Populate currency combo boxes (replace with your preferred API)
+        String currencies = {"USD", "EUR", "GBP", "JPY", "INR"}; // Example currencies
+        for (String currency : currencies) {
+            fromCurrencyComboBox.addItem(currency);
+            toCurrencyComboBox.addItem(currency);
+        }
+
+        setVisible(true);
+    }
+
+    private void convertCurrency() {
+        try {
+            String fromCurrency = (String) fromCurrencyComboBox.getSelectedItem();
+            String toCurrency = (String) toCurrencyComboBox.getSelectedItem();
+            double amount = Double.parseDouble(amountField.getText());
+
+            // Fetch exchange rate from API (replace with your API endpoint)
+            String apiUrl = "https://api.exchangeratesapi.io/latest?base=" + fromCurrency;
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            connection.disconnect();
+
+            JSONObject jsonObject = new JSONObject(content.toString());
+            double exchangeRate = jsonObject.getJSONObject("rates").getDouble(toCurrency);
+
+            double result = amount * exchangeRate;
+            resultLabel.setText(String.format("%.2f", result) + " " + toCurrency);
+
+        } catch (IOException | NumberFormatException ex) {
+            resultLabel.setText("Error: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String args) {
+        SwingUtilities.invokeLater(() -> new CurrencyConverterGUI());
+    }
+}

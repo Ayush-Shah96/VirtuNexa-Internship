@@ -1,0 +1,87 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+public class MovieTicketBooking extends JFrame {
+
+    private String[] movieNames = {"Movie 1", "Movie 2", "Movie 3"};
+    private String[][] seatLayout = {
+            {"A1", "A2", "A3", "A4", "A5"},
+            {"B1", "B2", "B3", "B4", "B5"},
+            {"C1", "C2", "C3", "C4", "C5"}
+    };
+    private JButton[] seats = new JButton[seatLayout.length * seatLayout[0].length];
+    private JComboBox<String> movieList;
+    private JLabel movieLabel, selectedSeatsLabel;
+    private JTextArea bookingDetails;
+    private List<String> selectedSeats = new ArrayList<>();
+
+    public MovieTicketBooking() {
+        super("Movie Ticket Booking");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Movie Selection
+        movieLabel = new JLabel("Select Movie:");
+        movieList = new JComboBox<>(movieNames);
+        JPanel moviePanel = new JPanel();
+        moviePanel.add(movieLabel);
+        moviePanel.add(movieList);
+        add(moviePanel, BorderLayout.NORTH);
+
+        // Seat Selection
+        JPanel seatPanel = new JPanel(new GridLayout(seatLayout.length, seatLayout[0].length));
+        int index = 0;
+        for (String[] row : seatLayout) {
+            for (String seat : row) {
+                seats[index] = new JButton(seat);
+                seats[index].addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JButton selectedSeat = (JButton) e.getSource();
+                        if (selectedSeat.getBackground() == Color.GREEN) {
+                            selectedSeat.setBackground(null); // Unselect
+                            selectedSeats.remove(selectedSeat.getText());
+                        } else {
+                            selectedSeat.setBackground(Color.GREEN); // Select
+                            selectedSeats.add(selectedSeat.getText());
+                        }
+                        updateSelectedSeatsLabel();
+                    }
+                });
+                seatPanel.add(seats[index]);
+                index++;
+            }
+        }
+        add(seatPanel, BorderLayout.CENTER);
+
+        // Booking Details
+        selectedSeatsLabel = new JLabel("Selected Seats:");
+        bookingDetails = new JTextArea(5, 20);
+        bookingDetails.setEditable(false);
+        JPanel detailsPanel = new JPanel(new BorderLayout());
+        detailsPanel.add(selectedSeatsLabel, BorderLayout.NORTH);
+        detailsPanel.add(new JScrollPane(bookingDetails), BorderLayout.CENTER);
+        add(detailsPanel, BorderLayout.SOUTH);
+
+        pack();
+        setVisible(true);
+    }
+
+    private void updateSelectedSeatsLabel() {
+        String selectedSeatsStr = String.join(", ", selectedSeats);
+        selectedSeatsLabel.setText("Selected Seats: " + selectedSeatsStr);
+        updateBookingDetails();
+    }
+
+    private void updateBookingDetails() {
+        String movieName = (String) movieList.getSelectedItem();
+        String seatsStr = String.join(", ", selectedSeats);
+        bookingDetails.setText("Movie: " + movieName + "\n" + "Seats: " + seatsStr);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new MovieTicketBooking());
+    }
+}

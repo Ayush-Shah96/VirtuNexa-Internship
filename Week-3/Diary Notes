@@ -1,0 +1,98 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DiaryGUI extends JFrame {
+
+    private JTextArea diaryTextArea;
+    private JButton saveButton, loadButton, clearButton;
+    private List<String> diaryEntries;
+    private String filename = "diary.txt";
+
+    public DiaryGUI() {
+        setTitle("Simple Diary");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 300);
+        setLayout(new BorderLayout());
+
+        diaryTextArea = new JTextArea();
+        diaryTextArea.setLineWrap(true);
+        diaryTextArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(diaryTextArea);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveDiary();
+            }
+        });
+        buttonPanel.add(saveButton);
+
+        loadButton = new JButton("Load");
+        loadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadDiary();
+            }
+        });
+        buttonPanel.add(loadButton);
+
+        clearButton = new JButton("Clear");
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearDiary();
+            }
+        });
+        buttonPanel.add(clearButton);
+
+        add(scrollPane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        diaryEntries = new ArrayList<>();
+
+        setVisible(true);
+    }
+
+    private void saveDiary() {
+        try {
+            FileWriter writer = new FileWriter(filename);
+            for (String entry : diaryEntries) {
+                writer.write(entry + "\n");
+            }
+            writer.close();
+            JOptionPane.showMessageDialog(this, "Diary saved successfully!");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving diary.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadDiary() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            String line;
+            diaryEntries.clear();
+            while ((line = reader.readLine()) != null) {
+                diaryEntries.add(line);
+            }
+            reader.close();
+            displayDiary();
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error loading diary.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void clearDiary() {
+        diaryTextArea.setText("");
+        diaryEntries.clear();
+    }
+
+    private void displayDiary() {
+        StringBuilder diaryText = new StringBuilder();
+        for (String

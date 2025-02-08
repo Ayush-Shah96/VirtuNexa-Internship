@@ -1,0 +1,142 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class CryptoTool extends JFrame {
+
+    private JTextArea inputArea = new JTextArea(10, 20);
+    private JTextArea outputArea = new JTextArea(10, 20);
+    private JComboBox<String> cipherType = new JComboBox<>(new String{"Caesar Cipher", "Vigenère Cipher"});
+    private JTextField keyField = new JTextField(10);
+    private JButton encryptButton = new JButton("Encrypt");
+    private JButton decryptButton = new JButton("Decrypt");
+
+    public CryptoTool() {
+        super("Crypto Tool");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Input Panel
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.add(new JLabel("Input Text:"), BorderLayout.NORTH);
+        inputPanel.add(new JScrollPane(inputArea), BorderLayout.CENTER);
+        add(inputPanel, BorderLayout.WEST);
+
+        // Output Panel
+        JPanel outputPanel = new JPanel(new BorderLayout());
+        outputPanel.add(new JLabel("Output Text:"), BorderLayout.NORTH);
+        outputPanel.add(new JScrollPane(outputArea), BorderLayout.CENTER);
+        add(outputPanel, BorderLayout.EAST);
+
+        // Control Panel
+        JPanel controlPanel = new JPanel(new GridLayout(3, 2));
+        controlPanel.add(new JLabel("Cipher Type:"));
+        controlPanel.add(cipherType);
+        controlPanel.add(new JLabel("Key:"));
+        controlPanel.add(keyField);
+        controlPanel.add(encryptButton);
+        controlPanel.add(decryptButton);
+        add(controlPanel, BorderLayout.SOUTH);
+
+        // Event Handlers
+        encryptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String plainText = inputArea.getText();
+                String key = keyField.getText();
+                String cipherText = "";
+
+                if (cipherType.getSelectedItem().equals("Caesar Cipher")) {
+                    cipherText = encryptCaesar(plainText, Integer.parseInt(key));
+                } else if (cipherType.getSelectedItem().equals("Vigenère Cipher")) {
+                    cipherText = encryptVigenere(plainText, key);
+                }
+
+                outputArea.setText(cipherText);
+            }
+        });
+
+        decryptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String cipherText = inputArea.getText();
+                String key = keyField.getText();
+                String plainText = "";
+
+                if (cipherType.getSelectedItem().equals("Caesar Cipher")) {
+                    plainText = decryptCaesar(cipherText, Integer.parseInt(key));
+                } else if (cipherType.getSelectedItem().equals("Vigenère Cipher")) {
+                    plainText = decryptVigenere(cipherText, key);
+                }
+
+                outputArea.setText(plainText);
+            }
+        });
+
+        pack();
+        setVisible(true);
+    }
+
+    private String encryptCaesar(String text, int shift) {
+        StringBuilder result = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            if (Character.isLetter(c)) {
+                if (Character.isUpperCase(c)) {
+                    char base = 'A';
+                    c = (char) (((c - base + shift) % 26) + base);
+                } else {
+                    char base = 'a';
+                    c = (char) (((c - base + shift) % 26) + base);
+                }
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
+
+    private String decryptCaesar(String text, int shift) {
+        return encryptCaesar(text, 26 - shift);
+    }
+
+    private String encryptVigenere(String text, String key) {
+        StringBuilder result = new StringBuilder();
+        int j = 0;
+        for (char c : text.toCharArray()) {
+            if (Character.isLetter(c)) {
+                if (Character.isUpperCase(c)) {
+                    char base = 'A';
+                    c = (char) (((c - base + Character.toUpperCase(key.charAt(j)) - 'A') % 26) + base);
+                } else {
+                    char base = 'a';
+                    c = (char) (((c - base + Character.toLowerCase(key.charAt(j)) - 'a') % 26) + base);
+                }
+                j = (j + 1) % key.length();
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
+
+    private String decryptVigenere(String text, String key) {
+        StringBuilder result = new StringBuilder();
+        int j = 0;
+        for (char c : text.toCharArray()) {
+            if (Character.isLetter(c)) {
+                if (Character.isUpperCase(c)) {
+                    char base = 'A';
+                    c = (char) (((c - base - Character.toUpperCase(key.charAt(j)) + 'A' + 26) % 26) + base);
+                } else {
+                    char base = 'a';
+                    c = (char) (((c - base - Character.toLowerCase(key.charAt(j)) + 'a' + 26) % 26) + base);
+                }
+                j = (j + 1) % key.length();
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
+
+    public static void main(String args) {
+        SwingUtilities.invokeLater(() -> new CryptoTool());
+    }
+}

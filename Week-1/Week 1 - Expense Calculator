@@ -1,0 +1,168 @@
+/*Goal: Build a console-based Java application that calculates the expense.
+
+
+Structure:
+     -User Interface: Design a console-based or GUI interface using Java frameworks (e.g., Swing, JavaFX, or simple CLI for basic functionality).
+     -Expense Management: Implement features for adding, editing, and deleting expenses, and categorizing them.
+     -Reports: Generate expense reports, showing detailed breakdowns and summaries of expenses over time.
+
+
+Technologies:
+     -Java: For developing the application’s core logic and features.
+     -JDBC/SQLite: For database interaction (to store and retrieve expense data).
+     -Swing/JavaFX (Optional): For building a GUI for better user interaction (if not a console application).
+
+Optional:
+     -JDBC/SQLite/JavaDB: For persistent data storage of expenses in a local database.
+     -Apache POI: For generating expense reports in Excel format.
+     -JSON/XML: For exporting or importing expense data (optional).
+
+Deliverables:
+     -Complete Java project files (including source code and necessary configuration files).
+     -JAR file for running the application.
+     -Documentation of the application’s functionality, usage, and setup.
+
+Checklist:
+     -Design the system for expense tracking with relevant fields (amount, category, date, etc.).
+     -Implement functionality to add, edit, view, and delete expenses.
+     -Implement a report generation system that displays detailed reports of expenses.
+     -Integrate database storage (e.g., SQLite, MySQL) to persist the expense data.
+     -Test the application in different environments (e.g., different Java versions, OS).
+     -Submit the complete project files and documentation.
+*/
+
+
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+import java.util.ArrayList;
+
+public class ExpenseTracker {
+    private Connection connection;
+    private JFrame frame;
+    private JTextField amountField, categoryField, dateField;
+    private JTextArea reportArea;
+    private ArrayList<Expense> expenses;
+
+    public ExpenseTracker() {
+        expenses = new ArrayList<>();
+        connectDatabase();
+        createUI();
+    }
+
+    private void connectDatabase() {
+        try {
+            connection = DriverManager.getConnection("jdbc:sqlite:expenses.db");
+            Statement stmt = connection.createStatement();
+            stmt.execute("CREATE TABLE IF NOT EXISTS expenses (id INTEGER PRIMARY KEY, amount REAL, category TEXT, date TEXT)");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createUI() {
+        frame = new JFrame("Expense Tracker");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 400);
+        frame.setLayout(new FlowLayout());
+
+        amountField = new JTextField(10);
+        categoryField = new JTextField(10);
+        dateField = new JTextField(10);
+        reportArea = new JTextArea(10, 30);
+        reportArea.setEditable(false);
+
+        JButton addButton = new JButton("Add Expense");
+        JButton viewButton = new JButton("View Expenses");
+        JButton deleteButton = new JButton("Delete Expense");
+
+        addButton.addActionListener(e -> addExpense());
+        viewButton.addActionListener(e -> viewExpenses());
+        deleteButton.addActionListener(e -> deleteExpense());
+
+        frame.add(new JLabel("Amount:"));
+        frame.add(amountField);
+        frame.add(new JLabel("Category:"));
+        frame.add(categoryField);
+        frame.add(new JLabel("Date:"));
+        frame.add(dateField);
+        frame.add(addButton);
+        frame.add(viewButton);
+        frame.add(deleteButton);
+        frame.add(new JScrollPane(reportArea));
+
+        frame.setVisible(true);
+    }
+
+    private void addExpense() {
+        try {
+            double amount = Double.parseDouble(amountField.getText());
+            String category = categoryField.getText();
+            String date = dateField.getText();
+
+            String sql = "INSERT INTO expenses (amount, category, date) VALUES (?, ?, ?)";
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setDouble(1, amount);
+            pstmt.setString(2, category);
+            pstmt.setString(3, date);
+            pstmt.executeUpdate();
+
+            expenses.add(new Expense(amount, category, date));
+            clearFields();
+        } catch (SQLException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void viewExpenses() {
+        reportArea.setText("");
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM expenses");
+            while (rs.next()) {
+                reportArea.append("ID: " + rs.getInt("id") + ", Amount: " + rs.getDouble("amount") +
+                        ", Category: " + rs.getString("category") + ", Date: " + rs.getString("date") + "\n");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteExpense() {
+        String idStr = JOptionPane.showInputDialog("Enter Expense ID to delete:");
+        try {
+            int id = Integer.parseInt(idStr);
+            String sql = "DELETE FROM expenses WHERE id = ?";
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+            viewExpenses();
+        } catch (SQLException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void clearFields() {
+        amountField.setText("");
+        categoryField.setText("");
+        dateField.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(ExpenseTracker::new);
+    }
+
+    class Expense {
+        double amount;
+        String category;
+        String date;
+
+        Expense(double amount, String category, String date) {
+            this.amount = amount;
+            this.category = category;
+            this.date = date;
+        }
+    }
+}

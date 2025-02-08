@@ -1,0 +1,90 @@
+/*
+Goal: Develop a Java application that functions as a simple stopwatch, allowing users to start, stop, and reset the timer, and display the elapsed time accurately.*/
+
+import java.util.Scanner;
+
+public class Stopwatch {
+    private long startTime;   // To store the start time
+    private long elapsedTime;  // To store the elapsed time
+    private boolean running;    // To check if the stopwatch is running
+
+    // Constructor
+    public Stopwatch() {
+        this.elapsedTime = 0;
+        this.running = false;
+    }
+
+    // Method to start the stopwatch
+    public void start() {
+        if (!running) {
+            startTime = System.currentTimeMillis(); // Record the start time
+            running = true;
+            System.out.println("Stopwatch started.");
+        } else {
+            System.out.println("Stopwatch is already running.");
+        }
+    }
+
+    // Method to stop the stopwatch
+    public void stop() {
+        if (running) {
+            elapsedTime += System.currentTimeMillis() - startTime; // Calculate total elapsed time
+            running = false;
+            System.out.println("Stopwatch stopped.");
+        } else {
+            System.out.println("Stopwatch is not running.");
+        }
+    }
+
+    // Method to reset the stopwatch
+    public void reset() {
+        elapsedTime = 0;
+        running = false;
+        System.out.println("Stopwatch reset.");
+    }
+
+    // Method to get the elapsed time in a formatted string
+    public String getElapsedTime() {
+        long totalElapsed = running ? elapsedTime + (System.currentTimeMillis() - startTime) : elapsedTime;
+        long seconds = (totalElapsed / 1000) % 60;
+        long minutes = (totalElapsed / (1000 * 60)) % 60;
+        long hours = (totalElapsed / (1000 * 60 * 60)) % 24;
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Stopwatch stopwatch = new Stopwatch();
+        String command;
+
+        System.out.println("Simple Stopwatch");
+        System.out.println("Commands: start, stop, reset, time, exit");
+
+        while (true) {
+            System.out.print("Enter command: ");
+            command = scanner.nextLine().toLowerCase();
+
+            switch (command) {
+                case "start":
+                    stopwatch.start();
+                    break;
+                case "stop":
+                    stopwatch.stop();
+                    break;
+                case "reset":
+                    stopwatch.reset();
+                    break;
+                case "time":
+                    System.out.println("Elapsed Time: " + stopwatch.getElapsedTime());
+                    break;
+                case "exit":
+                    System.out.println("Exiting the stopwatch.");
+                    scanner.close();
+                    return;
+                default:
+                    System.out.println("Invalid command. Please enter start, stop, reset, time, or exit.");
+            }
+        }
+    }
+}

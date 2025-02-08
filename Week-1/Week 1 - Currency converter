@@ -1,0 +1,72 @@
+/*
+
+Goal: Develop a Java application that allows users to convert between different currencies, using a fixed or real-time conversion rate (optional).
+
+*/
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class CurrencyConverter {
+    // A map to store the conversion rates
+    private Map<String, Double> exchangeRates;
+
+    // Constructor to initialize the exchange rates
+    public CurrencyConverter() {
+        exchangeRates = new HashMap<>();
+        // Define some fixed conversion rates
+        exchangeRates.put("USD", 1.0); // Base currency is USD
+        exchangeRates.put("EUR", 0.85); // 1 USD = 0.85 EUR
+        exchangeRates.put("GBP", 0.75); // 1 USD = 0.75 GBP
+        exchangeRates.put("JPY", 110.0); // 1 USD = 110 JPY
+    }
+
+    // Method to convert currency
+    public double convert(String fromCurrency, String toCurrency, double amount) {
+        // Check if the currencies are valid
+        if (!exchangeRates.containsKey(fromCurrency) || !exchangeRates.containsKey(toCurrency)) {
+            throw new IllegalArgumentException("Invalid currency code.");
+        }
+
+        // Convert amount to USD first
+        double amountInUSD = amount / exchangeRates.get(fromCurrency);
+        
+        // Convert USD to the target currency
+        return amountInUSD * exchangeRates.get(toCurrency);
+    }
+
+    public static void main(String[] args) {
+        CurrencyConverter converter = new CurrencyConverter();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Welcome to the Currency Converter!");
+        System.out.println("Supported currencies: USD, EUR, GBP, JPY");
+
+        while (true) {
+            System.out.print("Enter the currency you want to convert from (or type 'exit' to quit): ");
+            String fromCurrency = scanner.nextLine().toUpperCase();
+
+            if (fromCurrency.equals("EXIT")) {
+                System.out.println("Exiting the converter.");
+                break;
+            }
+
+            System.out.print("Enter the currency you want to convert to: ");
+            String toCurrency = scanner.nextLine().toUpperCase();
+
+            System.out.print("Enter the amount to convert: ");
+            double amount = scanner.nextDouble();
+            scanner.nextLine(); // Consume newline
+
+            try {
+                double convertedAmount = converter.convert(fromCurrency, toCurrency, amount);
+                System.out.printf("%.2f %s is equal to %.2f %s%n", amount, fromCurrency, convertedAmount, toCurrency);
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        scanner.close();
+    }
+}
